@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cuadra · prototipo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: phone frame centered, presenter rail on the left (desktop only). Single theme on purpose: it is the app's own look. */
+:root{
+  --ink:#16213A; --ink-soft:#4A5672; --paper:#F4F6FB; --card:#FFFFFF; --line:#E1E6F0;
+  --accent:#3B5BDB; --accent-soft:#E6ECFF; --amber:#E8A13A; --amber-soft:#FFF3DF;
+  --red:#D6455D; --red-soft:#FDE8EC; --green:#2F9E6E; --green-soft:#E3F6EE;
+  --work:#7A5AF8; --work-soft:#EFEAFF;
+  --font:"Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:#DDE3EF;font-family:var(--font);color:var(--ink);display:flex;gap:40px;justify-content:center;align-items:center;padding:24px 16px}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.rail{width:240px;display:flex;flex-direction:column;gap:6px;align-self:center}
+.rail h1{font-size:22px;margin:0;letter-spacing:-.02em}
+.rail p{margin:0 0 10px;color:var(--ink-soft);font-size:13px;line-height:1.45}
+.rail button{all:unset;cursor:pointer;font-size:13px;padding:7px 10px;border-radius:8px;color:var(--ink-soft)}
+.rail button:hover{background:#fff}
+.rail button.on{background:var(--ink);color:#fff}
+.rail .n{display:inline-block;width:22px;font-variant-numeric:tabular-nums;opacity:.6}
+.phone{width:390px;height:800px;max-height:calc(100vh - 48px);background:var(--paper);border-radius:44px;border:10px solid #0E1526;box-shadow:0 30px 60px rgba(22,33,58,.25);position:relative;overflow:hidden;display:flex;flex-direction:column}
+.status{height:34px;flex:none;display:flex;justify-content:space-between;align-items:center;padding:0 26px;font-size:12px;font-weight:700}
+.screen{display:none;flex:1;overflow-y:auto;padding:6px 18px 96px;flex-direction:column;gap:14px}
+.screen.on{display:flex}
+.top{display:flex;align-items:center;gap:10px;padding-top:4px}
+.top h2{margin:0;font-size:21px;letter-spacing:-.02em;flex:1}
+.back{border:none;background:var(--card);width:36px;height:36px;border-radius:12px;font-size:18px;color:var(--ink)}
+.sub{margin:-8px 0 0;color:var(--ink-soft);font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.row{display:flex;align-items:center;gap:10px}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.pill{font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;white-space:nowrap}
+.p-red{background:var(--red-soft);color:var(--red)} .p-amber{background:var(--amber-soft);color:#9A6210}
+.p-green{background:var(--green-soft);color:var(--green)} .p-blue{background:var(--accent-soft);color:var(--accent)}
+.p-work{background:var(--work-soft);color:var(--work)}
+.ev{display:grid;grid-template-columns:54px 1fr;gap:10px;align-items:stretch}
+.ev time{font-size:12px;font-weight:700;color:var(--ink-soft);padding-top:10px;font-variant-numeric:tabular-nums}
+.ev .box{border-radius:14px;padding:10px 12px;border-left:4px solid}
+.box b{display:block;font-size:14px}
+.box span{font-size:12px;color:var(--ink-soft)}
+.b-work{background:var(--work-soft);border-color:var(--work)}
+.b-class{background:var(--accent-soft);border-color:var(--accent)}
+.b-due{background:var(--amber-soft);border-color:var(--amber)}
+.b-rest{background:var(--green-soft);border-color:var(--green)}
+.alert{background:var(--red-soft);border:1px solid #F5C2CC;border-radius:18px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;text-align:left;width:100%;color:var(--ink)}
+.alert .ico{font-size:18px;line-height:1}
+.alert b{display:block;font-size:14px}
+.alert span{font-size:12px;color:var(--ink-soft)}
+.btn{border:none;border-radius:14px;padding:13px 16px;font-weight:700;font-size:14px;background:var(--accent);color:#fff;width:100%}
+.btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.btn.sm{width:auto;padding:8px 12px;font-size:12px;border-radius:10px}
+h3{margin:4px 0 0;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft)}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;display:flex;align-items:center;gap:12px;text-align:left;width:100%;color:var(--ink)}
+.item .t{flex:1;min-width:0}
+.item b{display:block;font-size:14px}
+.item span{font-size:12px;color:var(--ink-soft)}
+.chev{color:var(--ink-soft);font-size:18px}
+.nav{position:absolute;left:0;right:0;bottom:0;height:78px;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:8px 6px 16px}
+.nav button{border:none;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:600;color:var(--ink-soft)}
+.nav button i{font-style:normal;font-size:19px}
+.nav button.on{color:var(--accent)}
+.week{display:grid;grid-template-columns:28px repeat(7,1fr);gap:3px;font-size:10px}
+.week .h{text-align:center;font-weight:700;color:var(--ink-soft);padding-bottom:4px}
+.week .h.today{color:var(--accent)}
+.week .hr{color:var(--ink-soft);font-variant-numeric:tabular-nums;padding-top:2px}
+.week .c{height:26px;border-radius:5px;background:#EEF1F7}
+.c.w{background:var(--work)} .c.k{background:var(--accent)} .c.x{background:var(--red)} .c.r{background:#BFE7D3}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--ink-soft)}
+.legend span{display:flex;align-items:center;gap:5px}
+.toggle{width:44px;height:26px;border-radius:999px;background:#CBD3E3;border:none;position:relative;flex:none}
+.toggle::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .15s}
+.toggle[aria-pressed="true"]{background:var(--green)}
+.toggle[aria-pressed="true"]::after{left:21px}
+.check{width:22px;height:22px;border-radius:7px;border:2px solid #C3CBDB;background:#fff;flex:none;display:grid;place-items:center;font-size:13px;color:#fff;padding:0}
+.check[aria-pressed="true"]{background:var(--green);border-color:var(--green)}
+.done b{text-decoration:line-through;color:var(--ink-soft)}
+.bar{height:8px;border-radius:99px;background:#E7EBF3;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px}
+.big{font-size:30px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.hero{background:var(--ink);color:#fff;border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:6px}
+.hero span{color:#B9C3DC;font-size:13px}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600}
+.field input,.field select{font:inherit;font-weight:500;padding:12px;border-radius:12px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:600;color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.logo{width:72px;height:72px;border-radius:22px;background:var(--accent);display:grid;place-items:center;color:#fff;font-weight:800;font-size:34px;letter-spacing:-.04em}
+.center{align-items:center;text-align:center}
+.small{font-size:12px;color:var(--ink-soft);margin:0}
+.toast{position:absolute;left:18px;right:18px;bottom:92px;background:var(--ink);color:#fff;border-radius:14px;padding:12px 14px;font-size:13px;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none}
+.toast.show{opacity:1;transform:none}
+.price{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.price .card.sel{border:2px solid var(--accent)}
+@media (max-width:820px){.rail{display:none} body{padding:0} .phone{width:100%;height:100%;max-height:none;border:none;border-radius:0}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<nav class="rail" aria-label="Pantallas del prototipo">
+  <h1>Cuadra</h1>
+  <p>Prototipo de alta resolución. Los datos son de ejemplo. Toca los botones dentro del celular o salta a una pantalla desde aquí.</p>
+  <div id="railList"></div>
+</nav>
+
+<div class="phone">
+  <div class="status"><span>9:41</span><span>●●● 5G ▮</span></div>
+
+  <!-- 1 Bienvenida -->
+  <section class="screen center" id="inicio" data-name="Bienvenida" data-nav="none">
+    <div style="flex:1"></div>
+    <div class="logo">C</div>
+    <h2 style="margin:0;font-size:28px;letter-spacing:-.03em">Cuadra</h2>
+    <p class="small" style="font-size:14px;max-width:260px">Tus turnos, tus clases y tus entregas en un solo calendario.</p>
+    <div style="flex:1"></div>
+    <button class="btn" data-go="registro">Crear cuenta</button>
+    <button class="btn ghost" data-go="hoy">Ya tengo cuenta</button>
+    <p class="small">Funciona en Android, iPhone y en la web</p>
+  </section>
+
+  <!-- 2 Registro / configuración -->
+  <section class="screen" id="registro" data-name="Configurar cuenta" data-nav="none">
+    <div class="top"><button class="back" data-go="inicio" aria-label="Volver">‹</button><h2>Configura tu semana</h2></div>
+    <p class="sub">Paso 1 de 2 · tarda menos de 2 minutos</p>
+    <label class="field" for="u">¿Dónde estudias?
+      <input id="u" value="Politécnico Grancolombiano">
+    </label>
+    <div class="field">Conecta tu plataforma para traer las entregas
+      <div class="chips" role="group" aria-label="Plataforma">
+        <button class="chip" aria-pressed="true" data-chip>Canvas</button>
+        <button class="chip" aria-pressed="false" data-chip>Moodle</button>
+        <button class="chip" aria-pressed="false" data-chip>Teams</button>
+        <button class="chip" aria-pressed="false" data-chip>Lo agrego a mano</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row"><span class="pill p-green">Conectado</span><span class="small">Se encontraron 4 materias y 6 entregas</span></div>
+    </div>
+    <label class="field" for="cal">Sincronizar también con
+      <select id="cal"><option>Google Calendar</option><option>Outlook</option><option>Ninguno</option></select>
+    </label>
+    <button class="btn" data-go="turno">Continuar</button>
+  </section>
+
+  <!-- 3 Turno rotativo -->
+  <section class="screen" id="turno" data-name="Cargar turno rotativo" data-nav="none">
+    <div class="top"><button class="back" data-go="registro" aria-label="Volver">‹</button><h2>Tu turno de trabajo</h2></div>
+    <p class="sub">Paso 2 de 2 · lo cargas una vez y Cuadra lo repite</p>
+    <div class="field">Tipo de horario
+      <div class="chips" role="group" aria-label="Tipo de horario">
+        <button class="chip" aria-pressed="false" data-chip>Fijo</button>
+        <button class="chip" aria-pressed="true" data-chip>Rotativo</button>
+        <button class="chip" aria-pressed="false" data-chip>Variable</button>
+      </div>
+    </div>
+    <div class="card">
+      <b style="font-size:14px">Ciclo de 8 días</b>
+      <div class="list" style="gap:6px">
+        <div class="row"><span class="dot" style="background:var(--work)"></span><span style="flex:1;font-size:13px">2 días · Mañana</span><span class="small">6:00 a. m. – 2:00 p. m.</span></div>
+        <div class="row"><span class="dot" style="background:var(--work);opacity:.7"></span><span style="flex:1;font-size:13px">2 días · Tarde</span><span class="small">2:00 p. m. – 10:00 p. m.</span></div>
+        <div class="row"><span class="dot" style="background:var(--work);opacity:.45"></span><span style="flex:1;font-size:13px">2 días · Noche</span><span class="small">10:00 p. m. – 6:00 a. m.</span></div>
+        <div class="row"><span class="dot" style="background:var(--green)"></span><span style="flex:1;font-size:13px">2 días · Descanso</span><span class="small">Libre</span></div>
+      </div>
+    </div>
+    <label class="field" for="ini">El ciclo empieza el
+      <input id="ini" value="Lunes 23 de noviembre de 2026">
+    </label>
+    <p class="small">Cuadra revisa tus turnos contra tus clases y te avisa si algo se cruza.</p>
+    <button class="btn" data-go="hoy">Listo, ver mi semana</button>
+  </section>
+
+  <!-- 4 Hoy -->
+  <section class="screen" id="hoy" data-name="Inicio: hoy" data-nav="hoy">
+    <div class="top"><h2>Hola, Camila</h2><span class="pill p-blue">Lun 23 nov</span></div>
+    <button class="alert" data-go="cruce">
+      <span class="ico">⚠</span>
+      <span><b>Tu turno del martes se cruza con Bases de datos</b><span>Turno 2:00–10:00 p. m. · Clase 6:00–8:00 p. m. Toca para ver opciones.</span></span>
+    </button>
+    <h3>Tu día</h3>
+    <div class="ev"><time>6:00</time><div class="box b-work"><b>Turno mañana</b><span>Hasta las 2:00 p. m. · NOC</span></div></div>
+    <div class="ev"><time>3:30</time><div class="box b-rest"><b>Descanso protegido</b><span>Cuadra no pone tareas aquí</span></div></div>
+    <div class="ev"><time>5:00</time><div class="box b-due"><b>Avanzar taller de Cálculo</b><span>Sugerido por tu plan · 60 min</span></div></div>
+    <div class="ev"><time>6:30</time><div class="box b-class"><b>Inglés III · virtual</b><span>Hasta las 8:00 p. m. · <u>Entrar a la clase</u></span></div></div>
+    <h3>Próximas entregas</h3>
+    <button class="item" data-go="entrega"><span class="dot" style="background:var(--red)"></span><span class="t"><b>Taller 3 · Cálculo integral</b><span>Vence el miércoles 25 · en 2 días</span></span><span class="pill p-red">2 días</span></button>
+    <button class="item" data-go="entregas"><span class="dot" style="background:var(--amber)"></span><span class="t"><b>Avance proyecto · Bases de datos</b><span>Vence el viernes 27</span></span><span class="pill p-amber">4 días</span></button>
+    <button class="btn ghost" data-go="trayecto">🚌 Voy en el bus: ¿qué adelanto?</button>
+  </section>
+
+  <!-- 5 Semana -->
+  <section class="screen" id="semana" data-name="Calendario semanal" data-nav="semana">
+    <div class="top"><h2>Semana</h2><span class="pill p-blue">23 – 29 nov</span></div>
+    <div class="legend"><span><i class="dot" style="background:var(--work)"></i>Trabajo</span><span><i class="dot" style="background:var(--accent)"></i>Clase</span><span><i class="dot" style="background:var(--red)"></i>Cruce</span><span><i class="dot" style="background:#BFE7D3"></i>Libre</span></div>
+    <div class="card"><div class="week" id="week"></div></div>
+    <button class="alert" data-go="cruce"><span class="ico">⚠</span><span><b>1 cruce esta semana</b><span>Martes 24 · Bases de datos contra turno tarde</span></span></button>
+    <div class="card">
+      <div class="row"><b style="flex:1;font-size:14px">Horas de la semana</b></div>
+      <div class="row"><span style="width:70px;font-size:12px">Trabajo</span><div class="bar" style="flex:1"><i style="width:80%;background:var(--work)"></i></div><span class="small">48 h</span></div>
+      <div class="row"><span style="width:70px;font-size:12px">Clases</span><div class="bar" style="flex:1"><i style="width:20%;background:var(--accent)"></i></div><span class="small">12 h</span></div>
+      <div class="row"><span style="width:70px;font-size:12px">Estudio</span><div class="bar" style="flex:1"><i style="width:15%;background:var(--amber)"></i></div><span class="small">9 h</span></div>
+    </div>
+    <button class="btn" data-go="plan">Ver plan sugerido de estudio</button>
+  </section>
+
+  <!-- 6 Cruce -->
+  <section class="screen" id="cruce" data-name="Alerta de cruce" data-nav="semana">
+    <div class="top"><button class="back" data-go="semana" aria-label="Volver">‹</button><h2>Cruce de horario</h2></div>
+    <div class="card">
+      <span class="pill p-red" style="align-self:flex-start">Martes 24 de noviembre</span>
+      <div class="ev"><time>2:00</time><div class="box b-work"><b>Turno tarde</b><span>2:00 – 10:00 p. m.</span></div></div>
+      <div class="ev"><time>6:00</time><div class="box b-class" style="border-color:var(--red)"><b>Bases de datos · presencial</b><span>6:00 – 8:00 p. m. · se cruza 2 horas</span></div></div>
+    </div>
+    <h3>¿Qué quieres hacer?</h3>
+    <button class="item" data-toast="Mensaje copiado. Pégalo en el chat con tu jefe."><span class="t"><b>Pedir cambio de turno</b><span>Cuadra te arma el mensaje para tu jefe</span></span><span class="chev">›</span></button>
+    <div class="card" style="background:#FAFBFE">
+      <p class="small" style="font-size:13px;color:var(--ink)">“Hola, ¿me podrías cambiar el turno tarde del martes 24 por el de mañana? Tengo clase de 6 a 8 p. m. Gracias.”</p>
+    </div>
+    <button class="item" data-toast="Listo: Cuadra te recordará ver la grabación el miércoles."><span class="t"><b>Ver la clase grabada después</b><span>Te agenda un espacio el miércoles</span></span><span class="chev">›</span></button>
+    <button class="item" data-go="semana"><span class="t"><b>Ignorar esta vez</b><span>No te vuelve a avisar por este cruce</span></span><span class="chev">›</span></button>
+  </section>
+
+  <!-- 7 Entregas -->
+  <section class="screen" id="entregas" data-name="Entregas por materia" data-nav="entregas">
+    <div class="top"><h2>Entregas</h2><span class="pill p-green">Canvas al día</span></div>
+    <div class="chips" role="group" aria-label="Filtro">
+      <button class="chip" aria-pressed="true" data-chip>Pendientes</button>
+      <button class="chip" aria-pressed="false" data-chip>Hechas</button>
+      <button class="chip" aria-pressed="false" data-chip>Todas</button>
+    </div>
+    <div class="list">
+      <button class="item" data-go="entrega"><span class="dot" style="background:var(--red)"></span><span class="t"><b>Taller 3</b><span>Cálculo integral · mié 25 nov</span></span><span class="pill p-red">2 días</span></button>
+      <button class="item" data-go="entrega"><span class="dot" style="background:var(--amber)"></span><span class="t"><b>Avance del proyecto</b><span>Bases de datos · vie 27 nov · en grupo</span></span><span class="pill p-amber">4 días</span></button>
+      <button class="item" data-go="entrega"><span class="dot" style="background:var(--accent)"></span><span class="t"><b>Quiz unidad 4</b><span>Inglés III · lun 30 nov</span></span><span class="pill p-blue">7 días</span></button>
+      <button class="item" data-go="entrega"><span class="dot" style="background:var(--accent)"></span><span class="t"><b>Foro semana 6</b><span>Ética profesional · mié 2 dic</span></span><span class="pill p-blue">9 días</span></button>
+    </div>
+    <button class="btn ghost" data-go="materias">Ver mis materias y notas</button>
+    <button class="btn ghost" data-toast="En el prototipo esta opción solo se muestra.">＋ Agregar entrega a mano</button>
+  </section>
+
+  <!-- 8 Detalle entrega -->
+  <section class="screen" id="entrega" data-name="Detalle de entrega" data-nav="entregas">
+    <div class="top"><button class="back" data-go="entregas" aria-label="Volver">‹</button><h2>Taller 3</h2></div>
+    <p class="sub">Cálculo integral · traído de Canvas</p>
+    <div class="hero"><span>Vence</span><div class="big" style="font-size:24px">Mié 25 nov · 11:59 p. m.</div><span>Te quedan 2 días. Tu próximo hueco libre es hoy a las 5:00 p. m.</span></div>
+    <div class="card">
+      <b style="font-size:14px">Recordatorios</b>
+      <div class="row"><span style="flex:1;font-size:13px">7 días antes</span><button class="toggle" aria-pressed="true" aria-label="7 días antes"></button></div>
+      <div class="row"><span style="flex:1;font-size:13px">3 días antes</span><button class="toggle" aria-pressed="true" aria-label="3 días antes"></button></div>
+      <div class="row"><span style="flex:1;font-size:13px">1 día antes</span><button class="toggle" aria-pressed="true" aria-label="1 día antes"></button></div>
+      <div class="row"><span style="flex:1;font-size:13px">Avisar también por WhatsApp</span><button class="toggle" aria-pressed="false" aria-label="WhatsApp"></button></div>
+    </div>
+    <button class="btn" data-toast="Bloque agregado: hoy de 5:00 a 6:00 p. m.">Agendar 1 hora para hacerlo</button>
+    <button class="btn ghost" data-toast="Entrega marcada como hecha ✓">Marcar como entregada</button>
+  </section>
+
+  <!-- 9 Plan semanal -->
+  <section class="screen" id="plan" data-name="Plan semanal sugerido" data-nav="semana">
+    <div class="top"><button class="back" data-go="semana" aria-label="Volver">‹</button><h2>Plan sugerido</h2></div>
+    <p class="sub">Cuadra pone lo pesado en tus días de descanso y lo corto en tus huecos</p>
+    <div class="list" id="planList">
+      <div class="item"><button class="check" aria-pressed="true" aria-label="Hecho">✓</button><span class="t"><b>Repasar clase de Inglés</b><span>Lun · 30 min · en el bus</span></span><span class="pill p-green">Corto</span></div>
+      <div class="item"><button class="check" aria-pressed="false" aria-label="Hecho">✓</button><span class="t"><b>Taller 3 de Cálculo</b><span>Lun · 5:00 p. m. · 60 min</span></span><span class="pill p-amber">Medio</span></div>
+      <div class="item"><button class="check" aria-pressed="false" aria-label="Hecho">✓</button><span class="t"><b>Ver grabación de Bases de datos</b><span>Mié · 10:00 a. m. · 2 h</span></span><span class="pill p-amber">Medio</span></div>
+      <div class="item"><button class="check" aria-pressed="false" aria-label="Hecho">✓</button><span class="t"><b>Avance del proyecto (grupo)</b><span>Sáb · día de descanso · 3 h</span></span><span class="pill p-red">Pesado</span></div>
+      <div class="item"><button class="check" aria-pressed="false" aria-label="Hecho">✓</button><span class="t"><b>Estudiar quiz de Inglés</b><span>Dom · 4:00 p. m. · 45 min</span></span><span class="pill p-green">Corto</span></div>
+    </div>
+    <div class="card" style="background:var(--green-soft);border-color:#BFE7D3"><p class="small" style="color:var(--ink);font-size:13px">El domingo en la mañana queda libre. Cuadra lo deja como descanso.</p></div>
+  </section>
+
+  <!-- 10 Modo trayecto -->
+  <section class="screen" id="trayecto" data-name="Modo trayecto" data-nav="hoy">
+    <div class="top"><button class="back" data-go="hoy" aria-label="Volver">‹</button><h2>Modo trayecto</h2></div>
+    <div class="hero"><span>Tiempo estimado de viaje</span><div class="big">40 min</div><span>Estas tareas caben en tu trayecto y funcionan sin datos</span></div>
+    <div class="list">
+      <div class="item"><span class="t"><b>Lectura: integrales por partes</b><span>Cálculo · 15 min · PDF descargado</span></span><span class="pill p-green">Sin datos</span></div>
+      <div class="item"><span class="t"><b>Vocabulario unidad 4</b><span>Inglés III · 10 min · tarjetas</span></span><span class="pill p-green">Sin datos</span></div>
+      <div class="item"><span class="t"><b>Escuchar resumen de la clase</b><span>Bases de datos · 12 min · audio</span></span><span class="pill p-green">Sin datos</span></div>
+    </div>
+    <button class="btn" data-toast="Material descargado para usar sin conexión.">Descargar todo para el viaje</button>
+  </section>
+
+  <!-- 11 Grupo -->
+  <section class="screen" id="grupo" data-name="Trabajo en grupo" data-nav="grupo">
+    <div class="top"><h2>Proyecto BD</h2><span class="pill p-amber">Vie 27 nov</span></div>
+    <p class="sub">Bases de datos · 3 integrantes</p>
+    <div class="card">
+      <b style="font-size:14px">Horas en que todos están libres</b>
+      <div class="chips"><span class="chip">Mié 8:00–9:30 p. m.</span><span class="chip">Sáb 10:00 a. m.–1:00 p. m.</span></div>
+      <button class="btn sm" data-toast="Reunión propuesta al grupo: sábado 10:00 a. m.">Proponer reunión el sábado</button>
+    </div>
+    <h3>Tareas</h3>
+    <div class="list">
+      <div class="item done"><button class="check" aria-pressed="true" aria-label="Hecho">✓</button><span class="t"><b>Modelo entidad relación</b><span>Andrés · listo</span></span></div>
+      <div class="item"><button class="check" aria-pressed="false" aria-label="Hecho">✓</button><span class="t"><b>Scripts de creación de tablas</b><span>Camila · jue 26</span></span></div>
+      <div class="item"><button class="check" aria-pressed="false" aria-label="Hecho">✓</button><span class="t"><b>Documento y conclusiones</b><span>Sofía · vie 27</span></span></div>
+    </div>
+    <div class="card"><div class="row"><span style="font-size:13px;flex:1">Avance del grupo</span><b>33 %</b></div><div class="bar"><i style="width:33%;background:var(--green)"></i></div></div>
+  </section>
+
+  <!-- 12 Bienestar -->
+  <section class="screen" id="bienestar" data-name="Sueño y descanso" data-nav="perfil">
+    <div class="top"><button class="back" data-go="perfil" aria-label="Volver">‹</button><h2>Sueño y descanso</h2></div>
+    <div class="alert" style="background:var(--amber-soft);border-color:#F3D7A6"><span class="ico">🌙</span><span><b>3 noches seguidas con menos de 6 horas</b><span>Cuadra movió el estudio del jueves al sábado</span></span></div>
+    <div class="card">
+      <b style="font-size:14px">Horas de sueño · últimos 7 días</b>
+      <div style="display:flex;align-items:flex-end;gap:8px;height:110px" id="sleep"></div>
+      <p class="small">Meta: 7 horas por noche</p>
+    </div>
+    <div class="card">
+      <div class="row"><span style="flex:1;font-size:13px">Proteger mis días de descanso</span><button class="toggle" aria-pressed="true" aria-label="Proteger descanso"></button></div>
+      <div class="row"><span style="flex:1;font-size:13px">Avisarme si la semana viene cargada</span><button class="toggle" aria-pressed="true" aria-label="Avisar semana cargada"></button></div>
+    </div>
+  </section>
+
+  <!-- 13 Materias -->
+  <section class="screen" id="materias" data-name="Materias y notas" data-nav="entregas">
+    <div class="top"><button class="back" data-go="entregas" aria-label="Volver">‹</button><h2>Mis materias</h2></div>
+    <div class="list">
+      <div class="card"><div class="row"><b style="flex:1;font-size:14px">Cálculo integral</b><span class="pill p-amber">3.2</span></div><div class="bar"><i style="width:60%;background:var(--amber)"></i></div><p class="small">3 de 5 entregas hechas</p></div>
+      <div class="card"><div class="row"><b style="flex:1;font-size:14px">Bases de datos</b><span class="pill p-green">4.1</span></div><div class="bar"><i style="width:75%;background:var(--green)"></i></div><p class="small">3 de 4 entregas hechas</p></div>
+      <div class="card"><div class="row"><b style="flex:1;font-size:14px">Inglés III</b><span class="pill p-green">3.8</span></div><div class="bar"><i style="width:50%;background:var(--green)"></i></div><p class="small">2 de 4 entregas hechas</p></div>
+    </div>
+    <div class="card" style="border:2px solid var(--accent)">
+      <b style="font-size:14px">¿Cuánto necesito para pasar Cálculo?</b>
+      <p class="small" style="color:var(--ink);font-size:13px">Con 3.2 en lo que llevas, necesitas <b>2.9</b> en el último corte (40 %) para llegar a 3.0.</p>
+    </div>
+  </section>
+
+  <!-- 14 Perfil -->
+  <section class="screen" id="perfil" data-name="Perfil y plan Pro" data-nav="perfil">
+    <div class="top"><h2>Perfil</h2></div>
+    <div class="card"><div class="row"><div class="logo" style="width:48px;height:48px;font-size:20px;border-radius:14px">CR</div><div><b>Camila Rojas</b><p class="small">Plan gratis · Politécnico Grancolombiano</p></div></div></div>
+    <div class="list">
+      <button class="item" data-go="turno"><span class="t"><b>Mi turno de trabajo</b><span>Rotativo · ciclo de 8 días</span></span><span class="chev">›</span></button>
+      <button class="item" data-go="bienestar"><span class="t"><b>Sueño y descanso</b><span>Promedio: 5.9 h por noche</span></span><span class="chev">›</span></button>
+      <button class="item" data-go="registro"><span class="t"><b>Plataformas conectadas</b><span>Canvas · Google Calendar</span></span><span class="chev">›</span></button>
+    </div>
+    <h3>Cuadra Pro</h3>
+    <div class="price">
+      <div class="card"><b>Gratis</b><span class="small">Calendario y recordatorios</span><div class="big" style="font-size:22px">$0</div></div>
+      <div class="card sel"><b>Pro</b><span class="small">Alertas de cruce, plan semanal, grupos y modo trayecto</span><div class="big" style="font-size:22px">$7.900<span class="small"> /mes</span></div></div>
+    </div>
+    <button class="btn" data-toast="En el prototipo el pago no está activo.">Probar Pro gratis 7 días</button>
+  </section>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <nav class="nav" aria-label="Menú de la app" id="nav">
+    <button data-go="hoy" data-tab="hoy"><i>⌂</i>Hoy</button>
+    <button data-go="semana" data-tab="semana"><i>▦</i>Semana</button>
+    <button data-go="entregas" data-tab="entregas"><i>✓</i>Entregas</button>
+    <button data-go="grupo" data-tab="grupo"><i>☺</i>Grupo</button>
+    <button data-go="perfil" data-tab="perfil"><i>◔</i>Perfil</button>
+  </nav>
+</div>
+
+<script>
+(function(){
+  const screens=[...document.querySelectorAll('.screen')];
+  const nav=document.getElementById('nav');
+  const rail=document.getElementById('railList');
+  screens.forEach((s,i)=>{
+    const b=document.createElement('button');
+    b.dataset.go=s.id;
+    b.innerHTML='<span class="n">'+(i+1)+'</span>'+s.dataset.name;
+    rail.appendChild(b);
+  });
+  function show(id){
+    const s=document.getElementById(id)||screens[0];
+    screens.forEach(x=>x.classList.toggle('on',x===s));
+    nav.style.display=s.dataset.nav==='none'?'none':'grid';
+    nav.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.tab===s.dataset.nav));
+    rail.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.go===s.id));
+    s.scrollTop=0;
+  }
+  function go(id){ if(location.hash!=='#'+id){location.hash=id}else{show(id)} }
+  window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
+  document.addEventListener('click',e=>{
+    const g=e.target.closest('[data-go]'); if(g){e.preventDefault();go(g.dataset.go);return}
+    const t=e.target.closest('.toggle'); if(t){t.setAttribute('aria-pressed',t.getAttribute('aria-pressed')!=='true');return}
+    const c=e.target.closest('.check'); if(c){const on=c.getAttribute('aria-pressed')!=='true';c.setAttribute('aria-pressed',on);c.closest('.item').classList.toggle('done',on);return}
+    const ch=e.target.closest('[data-chip]'); if(ch){ch.parentElement.querySelectorAll('[data-chip]').forEach(x=>x.setAttribute('aria-pressed',x===ch));return}
+    const ts=e.target.closest('[data-toast]'); if(ts){toast(ts.dataset.toast)}
+  });
+  let tm; function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(tm);tm=setTimeout(()=>el.classList.remove('show'),2200)}
+  // week grid: rows 6am..10pm every 2h; codes w=work k=class x=conflict r=rest
+  const days=['L','M','X','J','V','S','D'];
+  const hours=['6a','8a','10a','12m','2p','4p','6p','8p','10p'];
+  const grid={
+    0:'wwwwk_k__', 1:'____wwxww', 2:'____wwkww', 3:'wwww_____', 4:'wwww__k__', 5:'rrrrrrrrr', 6:'rrrrrr_rr'
+  };
+  const wk=document.getElementById('week');
+  let html='<div></div>'+days.map((d,i)=>'<div class="h'+(i===0?' today':'')+'">'+d+'</div>').join('');
+  hours.forEach((h,r)=>{html+='<div class="hr">'+h+'</div>';for(let d=0;d<7;d++){const c=grid[d][r];html+='<div class="c'+(c==='w'?' w':c==='k'?' k':c==='x'?' x':c==='r'?' r':'')+'"></div>'}});
+  wk.innerHTML=html;
+  const sl=[6.5,5.5,5.8,5.6,7.2,8.0,6.1], days2=['M','J','V','S','D','L','M'];
+  document.getElementById('sleep').innerHTML=sl.map((v,i)=>'<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span class="small" style="font-variant-numeric:tabular-nums">'+v+'</span><div style="width:100%;height:'+(v*11)+'px;border-radius:6px;background:'+(v<6?'var(--amber)':'var(--green)')+'"></div><span class="small">'+days2[i]+'</span></div>').join('');
+  show(location.hash.slice(1)||'inicio');
+})();
+</script>
+</body>
+</html>
